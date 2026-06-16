@@ -22,7 +22,7 @@ Powered by [Qwen3-TTS](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-Base) —
 
 - Linux (tested on Arch)
 - Python 3.12
-- NVIDIA GPU with 6GB+ VRAM (tested on RTX 5060 8GB and RTX 5070 Ti 16GB)
+- NVIDIA GPU with 5GB+ VRAM (tested on RTX 5060 8GB and RTX 5070 Ti 16GB)
 - CUDA 12.x or 13.x
 - ffmpeg
 - sox
@@ -113,7 +113,7 @@ python script.py
 
 ## Reference Audio
 
-For best results, use a clean 10-30 second WAV clip with:
+For best results, use a clean 10-15 second WAV clip with:
 - No background music or noise
 - Clear, natural speech
 - The same accent/tone you want in the output
@@ -150,6 +150,7 @@ output/
 The M4B file works natively in:
 - Apple Podcasts / Books
 - VLC
+- MPV
 - Most podcast apps (Pocket Casts, Overcast, etc.)
 
 To convert to MP4 for YouTube:
