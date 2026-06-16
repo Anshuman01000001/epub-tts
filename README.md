@@ -1,170 +1,177 @@
-# LOTM Audiobook TTS
+# 📚 Audiobook TTS
 
-Convert *Lord of the Mysteries* (or any EPUB) into a fully chaptered M4B audiobook using [Qwen3-TTS](https://github.com/flybirdxx/ComfyUI-Qwen-TTS) voice cloning — no ComfyUI required.
+Convert EPUB files into full audiobooks using AI voice cloning.  
+Generates per-chapter FLAC files and a combined M4B with chapter markers.
 
-Built and optimized for an **RTX 5070 Ti + AMD 9800X3D** but runs on any CUDA-capable GPU with 8 GB+ VRAM.
+Powered by [Qwen3-TTS](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-Base) — runs fully locally, no API keys or cloud services required.
 
 ---
 
 ## Features
 
-- 🎙️ **Voice cloning** — provide a reference WAV and the narrator matches that voice throughout
-- 📖 **EPUB-native** — extracts chapters directly from the EPUB file structure
-- 💾 **Resumable** — already-generated chunks are skipped on restart; safe to cancel at any time
-- 🏎️ **Optimized** — Flash Attention 2, `torch.compile`, async disk I/O, parallel chunk reads
-- 📚 **M4B output** — single audiobook file with chapter markers, title, and artist metadata
-- 🧹 **Clean text** — strips translator notes, footnotes, and fixes Unicode punctuation before synthesis
+- Voice cloning from a short reference audio clip
+- Resumable generation — safe to stop and restart at any time
+- Per-chapter FLAC output + combined M4B with chapter markers
+- Clean Gradio UI or headless script mode
+- Automatic translator note removal and Unicode cleaning
+- Volume normalization and silence trimming between chunks
 
 ---
 
 ## Requirements
 
-- Python 3.10+
-- CUDA 12.8 (for RTX 4000/5000 series; adjust for your GPU)
-- `ffmpeg` installed and on PATH
-- A reference voice WAV file (~10–30 seconds of clean speech)
+- Linux (tested on Arch)
+- Python 3.12
+- NVIDIA GPU with 6GB+ VRAM (tested on RTX 5060 8GB and RTX 5070 Ti 16GB)
+- CUDA 12.x or 13.x
+- ffmpeg
+- sox
 
 ---
 
-## Setup
+## Installation
 
+**1. Clone the repo**
 ```bash
-# 1. Clone this repo
-git clone https://github.com/yourusername/lotm-tts.git
-cd lotm-tts
-
-# 2. Clone the Qwen-TTS backend into the same folder
-git clone https://github.com/flybirdxx/ComfyUI-Qwen-TTS .
-
-# 3. Create a self-contained virtual environment
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-
-# 4. Install PyTorch with CUDA 12.8
-pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu128
-
-# 5. Install Flash Attention 2 (takes 5–15 min to compile)
-pip install flash-attn --no-build-isolation
-
-# 6. Install remaining dependencies
-pip install transformers==4.57.3 soundfile ebooklib beautifulsoup4 \
-            lxml huggingface_hub accelerate tqdm
+git clone https://github.com/YOURUSERNAME/audiobook-tts.git
+cd audiobook-tts
 ```
 
-> **Note:** `transformers==4.57.3` is pinned — version 5+ breaks Qwen3-TTS.
-
----
-
-## Model Download
-
-Models are downloaded once and cached by HuggingFace (~14 GB for 7.1B):
-
+**2. Create a virtual environment**
 ```bash
-huggingface-cli download Qwen/Qwen3-TTS-12Hz-7.1B-Base
-huggingface-cli download Qwen/Qwen3-TTS-Tokenizer-12Hz
+python3.12 -m venv .venv
+source .venv/bin/activate
 ```
 
-For lower VRAM (< 12 GB), use the 1.7B model instead:
-
+**3. Install PyTorch (cu128 build)**
 ```bash
-huggingface-cli download Qwen/Qwen3-TTS-12Hz-1.7B-Base
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
 ```
 
-And update `MODEL_CHOICE` in the script accordingly.
-
----
-
-## Configuration
-
-Edit the config block at the top of `lotm_tts_fast.py`:
-
-```python
-EPUB_PATH      = "/path/to/your/book.epub"
-REF_AUDIO_PATH = "/path/to/reference_voice.wav"
-REF_TEXT       = "Transcript of the reference audio clip."
-
-PAGE_START     = 40    # First HTML page index in the EPUB to convert
-PAGE_END       = 50    # Last HTML page index (inclusive)
-MAX_WORDS      = 400   # Words per TTS chunk — increase for fewer model calls
+**4. Install dependencies**
+```bash
+pip install qwen-tts ebooklib beautifulsoup4 soundfile numpy tqdm gradio
 ```
 
-To find your `PAGE_START` / `PAGE_END` values, unzip the EPUB and look at the `index_split_NNN.html` filenames.
+**5. Install system packages**
+```bash
+# Arch
+sudo pacman -S ffmpeg sox
+
+# Ubuntu/Debian
+sudo apt install ffmpeg sox
+```
+
+**6. Download the model**
+```bash
+pip install huggingface_hub
+hf download Qwen/Qwen3-TTS-12Hz-1.7B-Base
+```
 
 ---
 
 ## Usage
 
+### Gradio UI (recommended)
+
 ```bash
 source .venv/bin/activate
-python lotm_tts_fast.py
+python app.py
 ```
 
-Output structure:
+Opens at `http://localhost:7860`. Upload your EPUB, reference audio, set the page range and output directory, then click **Generate**.
+
+### Headless script
+
+Edit the config section at the top of `script.py`:
+
+```python
+EPUB_PATH      = "/path/to/your/book.epub"
+REF_AUDIO_PATH = "/path/to/reference.wav"
+OUTPUT_DIR     = Path("/path/to/output")
+PAGE_START     = 5     # page = chapter + 4 for most EPUBs
+PAGE_END       = 217
+```
+
+Then run:
+```bash
+python script.py
+```
+
+---
+
+## Reference Audio
+
+For best results, use a clean 10-30 second WAV clip with:
+- No background music or noise
+- Clear, natural speech
+- The same accent/tone you want in the output
+
+Set `REF_TEXT` to an exact transcript of what the clip says.
+
+You can separate vocals from a mixed audio file using [Demucs](https://github.com/facebookresearch/demucs):
+```bash
+pip install demucs
+demucs your_audio.mp3
+```
+
+---
+
+## EPUB Structure
+
+Most EPUBs from fan translation sites use `index_split_XXX.html` page numbering.  
+For many novels: `page = chapter + 4` (Chapter 1 = page 5, Chapter 2 = page 6, etc.)
+
+Check your EPUB's structure by uploading it in the UI — it will auto-detect the page count and preview chapter titles.
+
+---
+
+## Output
 
 ```
-audio/
-├── chunks/          # Per-chunk WAV files (intermediate, resumable)
-├── chapters/        # Per-chapter FLAC files
-├── LOTM_Vol1_Klein.m4b   # Final audiobook
-└── failures.log     # Any chunks that failed after all retries
+output/
+├── chunks/          ← per-chunk WAVs (resumable, deleted after successful M4B)
+├── chapters/        ← per-chapter FLACs
+├── YourBook.m4b     ← final audiobook with chapter markers
+└── failures.log     ← any chunks that failed after all retries
+```
+
+The M4B file works natively in:
+- Apple Podcasts / Books
+- VLC
+- Most podcast apps (Pocket Casts, Overcast, etc.)
+
+To convert to MP4 for YouTube:
+```bash
+ffmpeg -loop 1 -i cover.jpg -i YourBook.m4b \
+  -c:v libx264 -tune stillimage -crf 51 -preset ultrafast \
+  -c:a copy -shortest output.mp4
 ```
 
 ---
 
 ## Performance
 
-Tested on RTX 5070 Ti (16 GB VRAM) + AMD Ryzen 9 9800X3D:
+| GPU | Chunk time | 200-chapter book |
+|-----|-----------|-----------------|
+| RTX 5060 8GB | ~60s/chunk | ~20h |
+| RTX 5070 Ti 16GB | ~25s/chunk | ~8h |
 
-| Setting | Time per chunk | ~1400 chapters |
-|---|---|---|
-| 7.1B + FA2 + compile, 400 words | ~25–40s | 3–5 days |
-| 1.7B + FA2 + compile, 400 words | ~10–18s | 1–2 days |
-
-> The first chapter takes ~60s longer while `torch.compile` traces the model — every chapter after is faster.
+Generation is resumable — you can stop and restart without redoing completed chunks.
 
 ---
 
-## Project Structure
+## Known Issues
 
-```
-lotm-tts/
-├── .venv/               # Self-contained Python environment
-├── qwen_tts/            # Qwen3-TTS backend (cloned from ComfyUI-Qwen-TTS)
-├── lotm_tts_fast.py     # Main conversion script
-├── audio/               # Generated output
-│   ├── chunks/
-│   ├── chapters/
-│   └── LOTM_Vol1_Klein.m4b
-└── README.md
-```
+- **flash-attn** does not install on CUDA 13.x — falls back to SDPA automatically
+- **onnxruntime-gpu** has no official wheel for CUDA 13.x — speaker encoder runs on CPU
+- GPU utilization is ~50% due to the above CPU bottleneck
 
 ---
 
-## Troubleshooting
+## License
 
-**`ImportError: cannot import name 'Qwen3TTSModel'`**
-Make sure you cloned the ComfyUI-Qwen-TTS repo *into* the same folder as the script so the `qwen_tts/` package is on the Python path.
+This project is released under the MIT License.  
+The Qwen3-TTS model is subject to its own license — see the [model card](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-Base).
 
-**Flash Attention 2 not loading**
-The script falls back to SDPA automatically. To manually install FA2:
-```bash
-pip install flash-attn --no-build-isolation
-```
-Requires CUDA toolkit headers — install via `sudo apt install cuda-toolkit-12-8`.
-
-**`transformers` version conflict**
-This project requires exactly `transformers==4.57.3`. If something else upgraded it, run:
-```bash
-pip install transformers==4.57.3 --force-reinstall
-```
-
-**Chunks failing repeatedly**
-Check `audio/failures.log` for the full traceback. Common cause is a chunk with unusual Unicode characters — the script's `CHAR_REPLACEMENTS` list can be extended to handle them.
-
----
-
-## Credits
-
-- [Qwen3-TTS](https://huggingface.co/Qwen) by Alibaba DAMO Academy
-- [ComfyUI-Qwen-TTS](https://github.com/flybirdxx/ComfyUI-Qwen-TTS) by flybirdxx
-- *Lord of the Mysteries* by Cuttlefish That Loves Diving
+Ensure you have the rights to any EPUB you convert. This tool is intended for personal use with content you own or have permission to use.
