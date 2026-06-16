@@ -40,8 +40,8 @@ SEED            = 559643366572128
 MODEL_CHOICE    = "Qwen/Qwen3-TTS-12Hz-1.7B-Base"
 MAX_WORDS       = 200             # words per TTS chunk
 MAX_RETRIES     = 3               # retry failed chunks this many times
-PAGE_START      = 5              # index_split_005.html  (Chapter 26 start) - 5 would be chapter 1
-PAGE_END        = 5              # index_split_011.html  (Chapter 36 end, inclusive)
+PAGE_START      = 5              # index_split_005.html  (Chapter 5 start) - 5 would be chapter 1
+PAGE_END        = 217              # index_split_011.html  (Chapter 213 end, inclusive)
 LANGUAGE        = "English"
 
 # Silence durations (ms)
