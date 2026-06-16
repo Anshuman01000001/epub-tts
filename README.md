@@ -33,7 +33,7 @@ Powered by [Qwen3-TTS](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-Base) —
 
 **1. Clone the repo**
 ```bash
-git clone https://github.com/YOURUSERNAME/audiobook-tts.git
+git clone https://github.com/Anshuman01000001/audiobook-tts.git
 cd audiobook-tts
 ```
 
