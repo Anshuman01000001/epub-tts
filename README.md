@@ -33,7 +33,7 @@ Powered by [Qwen3-TTS](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-Base) —
 
 ### Option A — Download release (easiest)
 
-1. Go to the [Releases](https://github.com/YOURUSERNAME/audiobook-tts/releases) page
+1. Go to the [Releases](https://github.com/Anshuman01000001/audiobook-tts/releases) page
 2. Download the latest `Source code (zip)` under Assets
 3. Extract it and open a terminal in the extracted folder
 
