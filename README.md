@@ -31,29 +31,40 @@ Powered by [Qwen3-TTS](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-Base) —
 
 ## Installation
 
-**1. Clone the repo**
+### Option A — Download release (easiest)
+
+1. Go to the [Releases](https://github.com/YOURUSERNAME/audiobook-tts/releases) page
+2. Download the latest `Source code (zip)` under Assets
+3. Extract it and open a terminal in the extracted folder
+
+### Option B — Clone with git
+
 ```bash
 git clone https://github.com/Anshuman01000001/audiobook-tts.git
 cd audiobook-tts
 ```
 
-**2. Create a virtual environment**
+---
+
+Once you have the files, continue with the steps below.
+
+**1. Create a virtual environment**
 ```bash
 python3.12 -m venv .venv
 source .venv/bin/activate
 ```
 
-**3. Install PyTorch (cu128 build)**
+**2. Install PyTorch (cu128 build)**
 ```bash
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
 ```
 
-**4. Install dependencies**
+**3. Install dependencies**
 ```bash
 pip install qwen-tts ebooklib beautifulsoup4 soundfile numpy tqdm gradio
 ```
 
-**5. Install system packages**
+**4. Install system packages**
 ```bash
 # Arch
 sudo pacman -S ffmpeg sox
@@ -62,7 +73,7 @@ sudo pacman -S ffmpeg sox
 sudo apt install ffmpeg sox
 ```
 
-**6. Download the model**
+**5. Download the model**
 ```bash
 pip install huggingface_hub
 hf download Qwen/Qwen3-TTS-12Hz-1.7B-Base
